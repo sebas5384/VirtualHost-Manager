@@ -25,5 +25,6 @@ vhm [new (nw)] [domain name]
 
 
 **Restart do Apache2**
+
 `vhm up`
 
