@@ -19,6 +19,7 @@ Install:
 Usage:
 ------
 **Criar novo VirtualHost**
+
 vhm [new (nw)] [domain name]
 
 `vhm new example.com.br`
