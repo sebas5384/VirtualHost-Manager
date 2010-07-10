@@ -22,4 +22,4 @@ Usage:
 vhm [command] [domain name]
 
 `vhm new example`
-
+ 
