@@ -16,6 +16,17 @@ if ( preg_match( '/^\-\-php\=/' , $argv[1] ) ) {
 }
 else if (count($argv) == 0) exit;
 
+
+/*
+ * Checa se existe a pasta ~/.vhm
+ */
+
+/*
+ * Le os dados do ~/.vhm/conf @TODO
+ */
+
+
+
 /*
  * Variaveis de Configuração
  */
@@ -23,7 +34,6 @@ define("APACHE_PATH", '/etc/apache2');
 define("APACHE_PATH_SITES", APACHE_PATH . '/sites-enabled/');
 define("APACHE_PATH_WWW", '/var/www/');
 define("HOSTS_PATH", '/etc/hosts');
-define("USER_NAME", 'sebas');
 
 /*
  * Feedback
@@ -77,7 +87,6 @@ function new_vhost( $nome = NULL ) {
 	$vhPath = APACHE_PATH_WWW . $nome;
 	if ( !file_exists( $vhPath ) ) {
 		mkdir( $vhPath , 0755 );
-		chown($vhPath, USER_NAME);
 	}
 	
 	/*
@@ -91,7 +100,7 @@ function new_vhost( $nome = NULL ) {
 	/*
 	 * Escreve o arquivo de configuração do VH
 	 */
-	file_put_contents( APACHE_PATH_SITES . $nome , $vhConf );
+	sudo_write_file( APACHE_PATH_SITES . $nome , $vhConf);
 	
 	
 	/*
@@ -107,22 +116,21 @@ function new_vhost( $nome = NULL ) {
 		/*
 		 * Cria o dominio
 		 */
-		$hConf .= "\n\n## " . $hTitulo . " ##\n";
-		$hConf .= "127.0.0.1	localhost." . $nome;
+		hosts_configuration($hConf, $hTitulo, $nome);
 		
 		/*
 		 * Escreve o arquivo de configuração do HOSTS
 		 */
-		file_put_contents( HOSTS_PATH , $hConf );
+		sudo_write_file( HOSTS_PATH , $hConf );
 	}
 	
 	/*
 	 * Cria o index.html
 	 */
 	$htmIndex = $vhPath . '/index.php';
-	file_put_contents( $htmIndex , '<h1>Virtual Host criado com VHM !!!</h1>' );
-	chmod( $htmIndex , 0755 );
-	chown( $htmIndex , USER_NAME);
+	if (!file_exists($htmIndex)) {
+		file_put_contents( $htmIndex , '<h1>Virtual Host criado com VHM !!!</h1>' );
+	}
 	
 	/*
 	 * Restarta o Apache
@@ -133,12 +141,34 @@ function new_vhost( $nome = NULL ) {
 	 * Feedback do proceso
 	 */
 	global $feedback;
-	$feedback .= "\n+------------------------------------------+\n";
+	$feedback .= "\n+-----------------------------------------------+\n";
 	$feedback .= "|           Dados do Virtual Host          |\n";
-	$feedback .= "+------------------------------------------+\n";
-	$feedback .= "DocumentRoot: $vhPath\n";
-	$feedback .= "         URL: http://localhost.$nome\n";
+	$feedback .= "+-----------------------------------------------+\n";
+	$feedback .= " DocumentRoot: $vhPath\n";
+	$feedback .= "          URL: http://localhost.$nome\n";
 	$feedback .= "+------------------------------------------+\n\n";
+}
+
+
+/**
+ * Apaga o Virtual Host @TODO
+ */
+function delete_vhost( $nome = NULL ) {
+	
+	$nome = strtolower($nome);
+	
+	/*
+	 * Apaga configuração do VH
+	 */
+	sudo_remove_file( APACHE_PATH_SITES . $nome );
+	
+	/*
+	 * Apaga configuração do HOSTS
+	 */
+	
+	
+	
+	
 }
 
 
@@ -146,5 +176,35 @@ function new_vhost( $nome = NULL ) {
  * Restarta o Apache
  */
 function restart_apache() {
-	exec("service apache2 restart");
+
+	system( "sudo service apache2 restart", $result );
+
+}
+
+
+function hosts_configuration( &$hConf, $hTitulo, $nome ) {
+	
+	/*
+	 * Cria o dominio
+	 */
+	$hConf .= "\n\n## " . $hTitulo . " ##\n";
+	$hConf .= "127.0.0.1	localhost." . $nome;
+}
+
+/**
+ * Escreve no arquivo com permissão root
+ */
+function sudo_write_file( $path, $text) {
+
+	exec( "echo '$text' | sudo tee $path", $result );
+
+}
+
+/**
+ * Apaga arquivo com permissão root
+ */
+function sudo_remove_file( $path ) {
+	
+	exec( "sudo rm -rf $path", $result );
+	
 }
