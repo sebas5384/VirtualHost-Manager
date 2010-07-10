@@ -12,8 +12,9 @@ Futuramente estarei fazendo um upgrade com o comando que remove o dominio.
 Install:
 --------
 
-`chmod +x [path-to-vhm-directory]/vhm
-sudo ln -s [path-to-vhm-directory]/vhm /usr/bin/vhm`
+`chmod +x [path-to-vhm-directory]/vhm`
+
+`sudo ln -s [path-to-vhm-directory]/vhm /usr/bin/vhm`
 
 
 Usage:
