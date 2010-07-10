@@ -19,7 +19,11 @@ Install:
 Usage:
 ------
 **Criar novo VirtualHost**
-vhm [command] [domain name]
+vhm [new (nw)] [domain name]
 
-`vhm new example`
- 
+`vhm new example.com.br`
+
+
+**Restart do Apache2**
+`vhm up`
+
