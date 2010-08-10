@@ -50,12 +50,12 @@ if (PHP_OS == 'Darwin') {
 	// Include da pasta com os vhosts
 	$includeVhosts = "NameVirtualHost *:" . APACHE_PORT . "\n\n";
 	$includeVhosts .= "# Include the virtual host configuration\n";
-	$includeVhosts .= "Include " . APACHE_PATH_SITES;
+	$includeVhosts .= "Include " . APACHE_PATH_SITES . "\n\n";
 	
 	$conf = file_get_contents( APACHE_PATH . '/httpd.conf' );
-	
-	if ( !preg_match( "/" . APACHE_PATH_SITES . "/", $conf ) ) {
-		file_get_contents( APACHE_PATH . '/httpd.conf', $conf . $includeVhosts );
+
+	if ( !preg_match( "/ˆInclude " . preg_replace("/\//", "\/", APACHE_PATH_SITES) . "$/", $conf ) ) {
+		file_put_contents( APACHE_PATH . '/httpd.conf', $conf . $includeVhosts );
 	}
 }
 
