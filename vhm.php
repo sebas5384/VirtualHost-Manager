@@ -8,6 +8,7 @@ if(!defined("STDIN")) {
 	define("STDIN", fopen('php://stdin','r'));
 }
 
+
 /*
  * Checa se vem argumentos
  */
@@ -30,10 +31,34 @@ else if (count($argv) == 0) exit;
 /*
  * Variaveis de Configuração
  */
-define("APACHE_PATH", '/etc/apache2');
+define("APACHE_PATH", '/Applications/MAMP/conf/apache');
 define("APACHE_PATH_SITES", APACHE_PATH . '/sites-enabled/');
-define("APACHE_PATH_WWW", '/var/www/');
+define("APACHE_PATH_WWW", '/Applications/MAMP/htdocs/');
 define("HOSTS_PATH", '/etc/hosts');
+define("APACHE_PORT", 80);
+
+
+/*
+ * MAC - Checa se existe a pasta "sites-enabled" e o include no "httpd.conf"
+ */
+if (PHP_OS == 'Darwin') {
+	// "sites-enabled"
+	if ( !file_exists( APACHE_PATH_SITES ) ) {
+		mkdir( APACHE_PATH_SITES , 0755 );
+	}
+	
+	// Include da pasta com os vhosts
+	$includeVhosts = "NameVirtualHost *:" . APACHE_PORT . "\n\n";
+	$includeVhosts .= "# Include the virtual host configuration\n";
+	$includeVhosts .= "Include " . APACHE_PATH_SITES;
+	
+	$conf = file_get_contents( APACHE_PATH . '/httpd.conf' );
+	
+	if ( !preg_match( "/" . APACHE_PATH_SITES . "/", $conf ) ) {
+		file_get_contents( APACHE_PATH . '/httpd.conf', $conf . $includeVhosts );
+	}
+}
+
 
 /*
  * Feedback
@@ -92,7 +117,7 @@ function new_vhost( $nome = NULL ) {
 	/*
 	 * Configuração do VH
 	 */
-	$vhConf = "<VirtualHost *:80>";
+	$vhConf = "<VirtualHost *:" . APACHE_PORT . ">";
 	$vhConf .= "\n\tDocumentRoot " . $vhPath;
 	$vhConf .= "\n\tServerName localhost." . $nome;
 	$vhConf .= "\n</VirtualHost>"; 
@@ -142,7 +167,7 @@ function new_vhost( $nome = NULL ) {
 	 */
 	global $feedback;
 	$feedback .= "\n+-----------------------------------------------+\n";
-	$feedback .= "|           Dados do Virtual Host          |\n";
+	$feedback .= "|           Dados do Virtual Host               |\n";
 	$feedback .= "+-----------------------------------------------+\n";
 	$feedback .= " DocumentRoot: $vhPath\n";
 	$feedback .= "          URL: http://localhost.$nome\n";
@@ -166,9 +191,6 @@ function delete_vhost( $nome = NULL ) {
 	 * Apaga configuração do HOSTS
 	 */
 	
-	
-	
-	
 }
 
 
@@ -176,9 +198,14 @@ function delete_vhost( $nome = NULL ) {
  * Restarta o Apache
  */
 function restart_apache() {
-
-	system( "sudo service apache2 restart", $result );
-
+	switch (PHP_OS) {
+		case "Linux":
+			system( "sudo service apache2 restart", $result );
+		break;
+		case "Darwin":
+			system( "/Applications/MAMP/Library/bin/apachectl restart", $result );
+		break;
+	}
 }
 
 
