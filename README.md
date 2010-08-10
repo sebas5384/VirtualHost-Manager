@@ -15,6 +15,8 @@ Install:
 
 `sudo ln -s [path-to-vhm-directory]/vhm /usr/bin/vhm`
 
+`sudo chmod 755 /usr/bin/vhm`
+
 
 Usage:
 ------
